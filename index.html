@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Skip-Bo Web</title>
+    <link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+    <div id="app">
+        <div class="felt" aria-hidden="true"></div>
+
+        <header class="topbar">
+            <h1 class="logo" aria-label="Skip-Bo">
+                <span>SKIP-BO</span>
+                <svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true">
+                    <path d="M5 16 C 56 5, 144 4, 195 12" fill="none" stroke="currentColor"
+                          stroke-width="6" stroke-linecap="round"/>
+                </svg>
+            </h1>
+            <div class="topbar-spacer"></div>
+            <button type="button" class="icon-btn" id="lang-toggle" onclick="toggleLang()" aria-label="Toggle language">EN</button>
+            <button type="button" class="icon-btn menu-btn" id="menu-toggle" onclick="toggleSetup()" aria-label="Open setup">?</button>
+        </header>
+
+        <section id="setup-panel" class="room-panel" aria-labelledby="setup-title">
+            <div class="room-panel-heading">
+                <p class="eyebrow" id="setup-eyebrow">SETUP</p>
+                <h2 id="setup-title">Play Skip-Bo</h2>
+                <p id="setup-sub">Create a game and play against bots.</p>
+            </div>
+            <div class="room-controls">
+                <section class="room-option">
+                    <h3 id="players-title">Players</h3>
+                    <div class="room-form-row">
+                        <label for="player-count" id="lbl-players">Players</label>
+                        <select id="player-count">
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                        </select>
+                    </div>
+                    <div class="room-form-row">
+                        <label for="stock-size" id="lbl-stock">Stock pile</label>
+                        <select id="stock-size">
+                            <option value="auto">Standard (30 / 20)</option>
+                            <option value="10">Quick 10</option>
+                            <option value="15">Quick 15</option>
+                        </select>
+                    </div>
+                    <div class="room-form-row">
+                        <label for="beginner" id="lbl-beginner">Beginner setup</label>
+                        <input id="beginner" type="checkbox">
+                    </div>
+                    <div class="room-form-row">
+                        <label for="scoring" id="lbl-scoring">Match scoring (500)</label>
+                        <input id="scoring" type="checkbox">
+                    </div>
+                    <div class="room-form-row">
+                        <button type="button" onclick="startGame()" id="btn-start">Start game</button>
+                    </div>
+                </section>
+                <div class="menu-links">
+                    <button type="button" class="menu-item" onclick="toggleLearn()" aria-label="Learn to play">
+                        <span aria-hidden="true">?</span> <span id="btn-learn">Learn to play</span>
+                    </button>
+                </div>
+            </div>
+            <div id="setup-status" role="status" aria-live="polite"></div>
+        </section>
+
+        <section id="learn-panel" class="modal" role="dialog" aria-modal="true" aria-labelledby="learn-title" hidden onclick="learnBackdropClick(event)">
+            <div class="learn-content">
+                <div class="learn-heading">
+                    <h2 id="learn-title">Learn Skip-Bo</h2>
+                    <button type="button" id="learn-close-btn" onclick="toggleLearn()" aria-label="Close">Close</button>
+                </div>
+                <div class="learn-langs" role="group" aria-label="Language">
+                    <button type="button" id="learn-lang-da" onclick="setLearnLang('da')" aria-pressed="false">Dansk</button>
+                    <button type="button" id="learn-lang-en" onclick="setLearnLang('en')" aria-pressed="true">English</button>
+                </div>
+                <div class="learn-pane" id="learn-pane-en" lang="en">
+                    <p class="learn-note">Skip-Bo is a sequencing card game. Be the first to play every card from your <strong>Stock pile</strong>.</p>
+                    <ol class="learn-steps">
+                        <li><strong>Setup.</strong> Each player gets a Stock pile (30 cards for 2-4 players, 20 for 5-6). Turn the top card face up. Rest form the Draw pile.</li>
+                        <li><strong>Draw.</strong> At the start of your turn draw to 5 cards.</li>
+                        <li><strong>Build.</strong> Play cards onto shared Building piles in order 1 to 12. Start a pile with 1 or a Skip-Bo wild.</li>
+                        <li><strong>Sources.</strong> Play from your hand, the top of your Stock pile, or tops of your Discard piles.</li>
+                        <li><strong>Stock first.</strong> Playing a Stock card reveals the next; chain them.</li>
+                        <li><strong>Refill.</strong> If you play all 5 hand cards, draw 5 more and continue.</li>
+                        <li><strong>Discard.</strong> End your turn by discarding one hand card to one of your 4 Discard piles.</li>
+                        <li><strong>Win.</strong> First to empty the Stock pile wins. Colors do not matter.</li>
+                    </ol>
+                    <p class="learn-tip">Tip: organize your Discard piles so useful cards stay on top.</p>
+                </div>
+                <div class="learn-pane" id="learn-pane-da" lang="da" hidden>
+                    <p class="learn-note">Skip-Bo er et sekvens-kortspil. Vær den første til at spille alle kort fra din <strong>Stock-bunke</strong>.</p>
+                    <ol class="learn-steps">
+                        <li><strong>Opsætning.</strong> Hver spiller får en Stock-bunke (30 kort for 2-4 spillere, 20 for 5-6). Vend øverste kort. Resten er trækbunken.</li>
+                        <li><strong>Træk.</strong> I starten af din tur træk til 5 kort.</li>
+                        <li><strong>Byg.</strong> Spil kort på fælles byggebunker i rækkefølge 1 til 12. Start en bunke med 1 eller et Skip-Bo-joker.</li>
+                        <li><strong>Kilder.</strong> Spil fra hånden, toppen af Stock-bunken eller toppen af dine smidebunker.</li>
+                        <li><strong>Stock først.</strong> At spille et Stock-kort afslører det næste; kæd dem.</li>
+                        <li><strong>Genopfyld.</strong> Hvis du spiller alle 5 håndkort, træk 5 mere og fortsæt.</li>
+                        <li><strong>Smid.</strong> Afslut din tur ved at smide et håndkort på en af dine 4 smidebunker.</li>
+                        <li><strong>Vind.</strong> Den første der tømmer Stock-bunken vinder. Farver betyder ikke noget.</li>
+                    </ol>
+                    <p class="learn-tip">Tip: organiser dine smidebunker, så nyttige kort ligger øverst.</p>
+                </div>
+            </div>
+        </section>
+
+        <main id="game-area" class="board" hidden>
+            <section class="seat" id="seat-top" data-seat="top" hidden>
+                <div class="plate"><span class="pname" id="name-top"></span><span class="pscore" id="score-top"></span></div>
+                <div class="stock-area" id="stock-top"></div>
+                <div class="discard-area" id="discards-top"></div>
+            </section>
+            <section class="seat" id="seat-topleft" data-seat="topleft" hidden>
+                <div class="plate"><span class="pname" id="name-topleft"></span><span class="pscore" id="score-topleft"></span></div>
+                <div class="stock-area" id="stock-topleft"></div>
+                <div class="discard-area" id="discards-topleft"></div>
+            </section>
+            <section class="seat" id="seat-topright" data-seat="topright" hidden>
+                <div class="plate"><span class="pname" id="name-topright"></span><span class="pscore" id="score-topright"></span></div>
+                <div class="stock-area" id="stock-topright"></div>
+                <div class="discard-area" id="discards-topright"></div>
+            </section>
+            <section class="seat" id="seat-left" data-seat="left" hidden>
+                <div class="plate"><span class="pname" id="name-left"></span><span class="pscore" id="score-left"></span></div>
+                <div class="stock-area" id="stock-left"></div>
+                <div class="discard-area" id="discards-left"></div>
+            </section>
+            <section class="seat" id="seat-right" data-seat="right" hidden>
+                <div class="plate"><span class="pname" id="name-right"></span><span class="pscore" id="score-right"></span></div>
+                <div class="stock-area" id="stock-right"></div>
+                <div class="discard-area" id="discards-right"></div>
+            </section>
+            <section class="seat" id="seat-bottom" data-seat="bottom">
+                <div class="plate"><span class="pname" id="name-bottom"></span><span class="pscore" id="score-bottom"></span></div>
+                <div class="stock-area" id="stock-bottom"></div>
+                <div class="discard-area" id="discards-bottom"></div>
+                <div class="hand-row" id="hand-bottom"></div>
+            </section>
+
+            <div class="center">
+                <div class="center-piles">
+                    <div class="pile deck" id="deck" aria-label="Draw pile">
+                        <div class="card back">SKIP-BO</div>
+                    </div>
+                    <div class="building-row" id="buildings"></div>
+                </div>
+                <div id="message" class="status" role="status" aria-live="polite">Start a game.</div>
+            </div>
+        </main>
+
+        <div id="win-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2 id="win-title">Game Over</h2>
+                <p id="win-msg"></p>
+                <div id="win-scores"></div>
+                <button id="win-btn" onclick="newGame()">New game</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=1"></script>
+</body>
+</html>
