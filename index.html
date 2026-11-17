@@ -6,7 +6,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Skip-Bo Web</title>
-    <link rel="stylesheet" href="style.css?v=1">
+    <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
     <div id="app">
@@ -22,7 +22,7 @@
             </h1>
             <div class="topbar-spacer"></div>
             <button type="button" class="icon-btn" id="lang-toggle" onclick="toggleLang()" aria-label="Toggle language">EN</button>
-            <button type="button" class="icon-btn menu-btn" id="menu-toggle" onclick="toggleSetup()" aria-label="Open setup">?</button>
+            <button type="button" class="icon-btn menu-btn" id="menu-toggle" onclick="toggleSetup()" aria-label="Menu">?</button>
         </header>
 
         <section id="setup-panel" class="room-panel" aria-labelledby="setup-title">
@@ -115,37 +115,33 @@
         </section>
 
         <main id="game-area" class="board" hidden>
-            <section class="seat" id="seat-top" data-seat="top" hidden>
-                <div class="plate"><span class="pname" id="name-top"></span><span class="pscore" id="score-top"></span></div>
-                <div class="stock-area" id="stock-top"></div>
-                <div class="discard-area" id="discards-top"></div>
-            </section>
-            <section class="seat" id="seat-topleft" data-seat="topleft" hidden>
-                <div class="plate"><span class="pname" id="name-topleft"></span><span class="pscore" id="score-topleft"></span></div>
-                <div class="stock-area" id="stock-topleft"></div>
-                <div class="discard-area" id="discards-topleft"></div>
-            </section>
-            <section class="seat" id="seat-topright" data-seat="topright" hidden>
-                <div class="plate"><span class="pname" id="name-topright"></span><span class="pscore" id="score-topright"></span></div>
-                <div class="stock-area" id="stock-topright"></div>
-                <div class="discard-area" id="discards-topright"></div>
-            </section>
-            <section class="seat" id="seat-left" data-seat="left" hidden>
-                <div class="plate"><span class="pname" id="name-left"></span><span class="pscore" id="score-left"></span></div>
-                <div class="stock-area" id="stock-left"></div>
-                <div class="discard-area" id="discards-left"></div>
-            </section>
-            <section class="seat" id="seat-right" data-seat="right" hidden>
-                <div class="plate"><span class="pname" id="name-right"></span><span class="pscore" id="score-right"></span></div>
-                <div class="stock-area" id="stock-right"></div>
-                <div class="discard-area" id="discards-right"></div>
-            </section>
-            <section class="seat" id="seat-bottom" data-seat="bottom">
-                <div class="plate"><span class="pname" id="name-bottom"></span><span class="pscore" id="score-bottom"></span></div>
-                <div class="stock-area" id="stock-bottom"></div>
-                <div class="discard-area" id="discards-bottom"></div>
-                <div class="hand-row" id="hand-bottom"></div>
-            </section>
+            <div class="opponents" id="opponents">
+                <section class="seat" id="seat-top" data-seat="top" hidden>
+                    <div class="plate"><span class="pname" id="name-top"></span><span class="pscore" id="score-top"></span></div>
+                    <div class="stock-area" id="stock-top"></div>
+                    <div class="discard-area" id="discards-top"></div>
+                </section>
+                <section class="seat" id="seat-topleft" data-seat="topleft" hidden>
+                    <div class="plate"><span class="pname" id="name-topleft"></span><span class="pscore" id="score-topleft"></span></div>
+                    <div class="stock-area" id="stock-topleft"></div>
+                    <div class="discard-area" id="discards-topleft"></div>
+                </section>
+                <section class="seat" id="seat-topright" data-seat="topright" hidden>
+                    <div class="plate"><span class="pname" id="name-topright"></span><span class="pscore" id="score-topright"></span></div>
+                    <div class="stock-area" id="stock-topright"></div>
+                    <div class="discard-area" id="discards-topright"></div>
+                </section>
+                <section class="seat" id="seat-left" data-seat="left" hidden>
+                    <div class="plate"><span class="pname" id="name-left"></span><span class="pscore" id="score-left"></span></div>
+                    <div class="stock-area" id="stock-left"></div>
+                    <div class="discard-area" id="discards-left"></div>
+                </section>
+                <section class="seat" id="seat-right" data-seat="right" hidden>
+                    <div class="plate"><span class="pname" id="name-right"></span><span class="pscore" id="score-right"></span></div>
+                    <div class="stock-area" id="stock-right"></div>
+                    <div class="discard-area" id="discards-right"></div>
+                </section>
+            </div>
 
             <div class="center">
                 <div class="center-piles">
@@ -156,6 +152,13 @@
                 </div>
                 <div id="message" class="status" role="status" aria-live="polite">Start a game.</div>
             </div>
+
+            <section class="seat seat-self" id="seat-bottom" data-seat="bottom">
+                <div class="plate"><span class="pname" id="name-bottom"></span><span class="pscore" id="score-bottom"></span></div>
+                <div class="stock-area" id="stock-bottom"></div>
+                <div class="discard-area" id="discards-bottom"></div>
+                <div class="hand-row" id="hand-bottom"></div>
+            </section>
         </main>
 
         <div id="win-modal" class="modal hidden">
@@ -168,6 +171,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=1"></script>
+    <script src="script.js?v=3"></script>
 </body>
 </html>
