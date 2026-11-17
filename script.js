@@ -150,6 +150,7 @@ function startGame(){
   }
   document.getElementById('setup-panel').hidden = true;
   document.getElementById('game-area').hidden = false;
+  document.getElementById('app').classList.add('room-active');
   renderSeats();
   beginTurn(0);
 }
@@ -354,6 +355,7 @@ function newGame(){
   document.getElementById('win-modal').hidden=true;
   document.getElementById('win-modal').classList.add('hidden');
   document.getElementById('game-area').hidden=true;
+  document.getElementById('app').classList.remove('room-active');
   document.getElementById('setup-panel').hidden=false;
 }
 
@@ -366,6 +368,7 @@ function playerNames(){
 // ---- Rendering ----
 function renderSeats(){
   const n = state.players;
+  document.getElementById('game-area').dataset.players = String(n);
   const allSeats = ['bottom','left','topleft','top','topright','right'];
   allSeats.forEach(s=>{
     const el = document.getElementById('seat-'+s);
@@ -381,6 +384,7 @@ function renderSeats(){
   else if(oppCount===4) seatsToUse=['left','topleft','top','right'];
   else seatsToUse=['left','topleft','top','topright','right'];
   state.seatMap = ['bottom'].concat(seatsToUse);
+  document.getElementById('opponents').dataset.count = String(oppCount);
   for(let i=0;i<oppCount;i++){
     const seat = seatsToUse[i];
     const el = document.getElementById('seat-'+seat);
@@ -403,13 +407,18 @@ function render(){
     renderPlayerArea(seat, p);
     document.getElementById('name-'+seat).textContent = names[p];
     const sc = document.getElementById('score-'+seat);
-    if(sc) sc.textContent = scoring? matchScores[p] : (state.stocks[p].length+' '+t('stockLeft'));
+    if(sc) sc.textContent = scoring? matchScores[p] : state.stocks[p].length;
   }
   document.getElementById('score-bottom').textContent = scoring? matchScores[0] : (state.stocks[0].length+' '+t('stockLeft'));
   // center draw count
   const deck = document.getElementById('deck');
   deck.innerHTML = '';
-  const back = document.createElement('div'); back.className='card back'; back.textContent='SKIP-BO'; deck.appendChild(back);
+  for(let i=0;i<3;i++){
+    const back = document.createElement('div');
+    back.className='card back';
+    back.textContent = i===2 ? 'SKIP-BO' : '';
+    deck.appendChild(back);
+  }
   // building
   const brow = document.getElementById('buildings');
   brow.innerHTML='';
@@ -445,7 +454,7 @@ function renderPlayerArea(seat, p){
     }
     stockPile.appendChild(c);
   } else {
-    const c = document.createElement('div'); c.className='card back'; c.textContent=''; stockPile.appendChild(c);
+    const c = document.createElement('div'); c.className='card empty'; c.textContent=''; stockPile.appendChild(c);
   }
   const cnt = document.createElement('div'); cnt.className='stock-count'; cnt.textContent = state.stocks[p].length; stockPile.appendChild(cnt);
   stockEl.appendChild(stockPile);

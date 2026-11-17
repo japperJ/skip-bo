@@ -1,8 +1,8 @@
 /* ==========================================================================
-   Skyjo web — table design.
-   Structure: wooden table + felt stage; four player stations around a centre
-   with the draw deck, the discard pile and (when drawn) the drawn card.
-   Portrait uses a stacked layout; landscape uses the radial table.
+   Skip-Bo web — table design.
+   Structure: wooden table + felt stage; player stations around a central
+   draw deck and four shared building piles.
+   Portrait stacks the stations; landscape fans them around the table.
    ========================================================================== */
 
 :root {
@@ -99,8 +99,8 @@ body {
    -------------------------------------------------------------------------- */
 
 .topbar {
-    position: absolute;
-    inset: 0 0 auto 0;
+    position: relative;
+    inset: auto;
     z-index: 10;
     display: flex;
     align-items: center;
@@ -112,7 +112,7 @@ body {
 .logo {
     display: flex;
     flex-direction: column;
-    width: clamp(92px, 24vw, 150px);
+    width: clamp(100px, 26vw, 160px);
     margin: 0;
     color: #fff;
     text-shadow: 0 3px 14px rgba(0, 0, 0, 0.4);
@@ -120,7 +120,8 @@ body {
 }
 
 .logo span {
-    font-size: clamp(22px, 6.4vw, 38px);
+    font-size: clamp(22px, 6vw, 38px);
+    white-space: nowrap;
     font-style: italic;
     font-weight: 900;
     line-height: 0.86;
@@ -186,7 +187,7 @@ body {
     overflow-y: auto;
 }
 
-#app.room-active #room-panel:not([hidden]) {
+#app.room-active #setup-panel:not([hidden]) {
     position: fixed;
     z-index: 30;
     top: calc(60px + env(safe-area-inset-top));
@@ -222,29 +223,45 @@ body {
     font-size: 0.92rem;
 }
 
-#app.room-active #room-panel .room-panel-heading {
+#app.room-active #setup-panel .room-panel-heading {
     margin-bottom: 12px;
 }
 
-#app.room-active #room-panel .room-panel-heading > p:last-child {
+#app.room-active #setup-panel .room-panel-heading > p:last-child {
     display: none;
 }
 
 /* In a game the menu is not a setup form: the room controls (create/join)
    only clutter it, and hiding them keeps the menu links on screen. */
-#app.room-active #room-panel .room-controls {
+#app.room-active #setup-panel .room-option {
     display: none;
 }
 
-#app.room-active #room-panel .room-panel-heading h2 {
+#app.room-active #setup-panel .room-controls {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+#app.room-active #setup-panel .menu-links {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+}
+
+#app.room-active #setup-panel .room-panel-heading h2 {
     font-size: 1.25rem;
 }
 
 .room-controls {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
-    align-items: stretch;
+    grid-template-columns: minmax(0, 1fr) minmax(160px, 220px);
+    align-items: start;
     gap: 22px;
+}
+
+.room-controls .menu-links {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
 }
 
 .room-option h3 {
@@ -277,7 +294,7 @@ body {
     white-space: nowrap;
 }
 
-.room-form-row input,
+.room-form-row input:not([type="checkbox"]),
 .room-form-row select {
     width: 100%;
     min-width: 0;
@@ -288,6 +305,16 @@ body {
     background: rgba(6, 14, 9, 0.6);
     color: var(--white);
     font: inherit;
+}
+
+.room-form-row input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    min-width: 0;
+    margin-left: auto;
+    padding: 0;
+    border-radius: 5px;
+    accent-color: var(--glow);
 }
 
 .room-form-row input::placeholder {
@@ -576,6 +603,49 @@ body {
     backdrop-filter: blur(3px);
 }
 
+/* Round-end / win dialog */
+.modal-content {
+    width: min(420px, calc(100vw - 32px));
+    max-height: calc(100dvh - 32px);
+    padding: 24px 28px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    background: rgba(10, 20, 14, 0.96);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(16px);
+    text-align: center;
+    overflow-y: auto;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: var(--glow);
+    font-size: 1.4rem;
+}
+
+.modal-content p {
+    margin: 0.5em 0;
+    font-size: 0.96rem;
+    line-height: 1.5;
+    opacity: 0.9;
+}
+
+.modal-content button {
+    margin-top: 15px;
+    padding: 12px 30px;
+    font-size: 1.02rem;
+    border: none;
+    border-radius: 10px;
+    background: var(--glow);
+    color: #06220f;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.modal-content button:hover {
+    filter: brightness(1.06);
+}
+
 #learn-panel {
     z-index: 110;
     overflow-y: auto;
@@ -703,59 +773,71 @@ body {
     text-decoration: underline;
 }
 
-/* --------------------------------------------------------------------------
-   Board: base layout = phone portrait (stacked)
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   Game board — a fluid felt table that scales from phones to iPads.
+   Portrait stacks the opponents, the shared building area and your seat.
+   Landscape fans the seats around the buildings like a real table.
+   ========================================================================== */
+
+#app {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
+}
+
+/* Centre the setup card in whatever screen it is shown on. */
+#app > .room-panel {
+    align-self: center;
+    justify-self: center;
+    margin: 0;
+    max-height: calc(100dvh - 124px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+}
 
 .board {
+    --pad-x: clamp(10px, 2.6vw, 26px);
+    --card-gap: clamp(3px, 0.9vw, 8px);
+    --seat-gap: clamp(5px, 1.4vw, 16px);
+    --col-gap: clamp(8px, 2vw, 26px);
+    --label-size: clamp(0.66rem, 0.52rem + 0.32vw, 0.95rem);
+    --card-w: 64px;
+    --radius: calc(var(--card-w) * 0.09);
     position: relative;
     z-index: 2;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-areas:
-        "topleft top topright"
-        "left center right"
-        "bottom bottom bottom";
-    grid-template-rows: auto auto 1fr auto;
-    justify-items: center;
-    row-gap: clamp(6px, 1.1vh, 14px);
-    column-gap: clamp(8px, 2vw, 20px);
-    padding: calc(58px + env(safe-area-inset-top)) 10px calc(6px + env(safe-area-inset-bottom));
-    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(6px, 1.4dvh, 18px);
+    min-height: 0;
+    padding: clamp(4px, 1.2dvh, 12px) var(--pad-x)
+        calc(10px + env(safe-area-inset-bottom));
 }
+
+/* ---------- Seats --------------------------------------------------------- */
+
+.opponents {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: var(--seat-gap);
+    width: 100%;
+    flex: 0 0 auto;
+}
+
+.opponents .seat[data-seat="left"] { order: 1; }
+.opponents .seat[data-seat="topleft"] { order: 2; }
+.opponents .seat[data-seat="top"] { order: 3; }
+.opponents .seat[data-seat="topright"] { order: 4; }
+.opponents .seat[data-seat="right"] { order: 5; }
 
 .seat {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: clamp(5px, 1vh, 10px);
+    gap: clamp(3px, 0.7dvh, 8px);
+    min-width: 0;
 }
 
-.seat[data-seat="top"] {
-    grid-area: top;
-}
+/* ---------- Player plates ------------------------------------------------- */
 
-.seat[data-seat="left"] {
-    grid-area: left;
-    justify-self: end;
-}
-
-.seat[data-seat="right"] {
-    grid-area: right;
-    justify-self: start;
-}
-
-.seat[data-seat="bottom"] {
-    grid-area: bottom;
-}
-
-/* Three players: the single opponent sits centred instead of in one column. */
-.board.is-single-side .seat[data-seat="left"] {
-    grid-column: 1 / -1;
-    justify-self: center;
-}
-
-/* Player plates */
 .plate {
     position: relative;
     display: flex;
@@ -780,7 +862,23 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
-/* Active player: glow on plate and grid, plus a pointing arrow. */
+/* Opponent plates are two compact lines so five of them fit on a phone. */
+.opponents .plate {
+    flex-direction: column;
+    gap: 0;
+    padding: 0.14em 0.5em;
+    font-size: clamp(8px, calc(var(--card-w) * 0.2), 14px);
+    line-height: 1.25;
+}
+
+.opponents[data-count="1"] .plate {
+    flex-direction: row;
+    gap: 0.65em;
+    padding: 0.3em 1em;
+    font-size: var(--label-size);
+}
+
+/* Active player: glow on plate and a pointing arrow. */
 .seat.is-active .plate {
     box-shadow:
         0 0 0 2px rgba(123, 255, 180, 0.85),
@@ -827,28 +925,7 @@ body {
     border-left: 12px solid var(--glow);
 }
 
-.grid-frame {
-    padding: 6px;
-    border-radius: calc(var(--radius) + 8px);
-}
-
-.seat.is-active .grid-frame {
-    background: rgba(123, 255, 180, 0.045);
-    box-shadow:
-        0 0 0 2px rgba(123, 255, 180, 0.8),
-        0 0 34px rgba(123, 255, 180, 0.34),
-        inset 0 0 24px rgba(123, 255, 180, 0.08);
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: repeat(4, var(--card-w));
-    gap: var(--card-gap);
-}
-
-/* --------------------------------------------------------------------------
-   Cards
-   -------------------------------------------------------------------------- */
+/* ---------- Cards --------------------------------------------------------- */
 
 .card {
     position: relative;
@@ -872,83 +949,12 @@ body {
         inset 0 -2px 0 rgba(0, 0, 0, 0.16),
         0 2px 0 rgba(0, 0, 0, 0.22),
         0 8px 18px rgba(0, 0, 0, 0.28);
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-
-.grid .card {
-    cursor: pointer;
-}
-
-.grid .card:hover,
-.hand-area .card:hover {
-    transform: translateY(-2px);
-}
-
-.grid .card:active {
-    transform: translateY(0) scale(0.97);
-}
-
-.card:focus-visible,
-.pile:focus-visible,
-.hand-area:focus-visible {
-    outline: 2px solid var(--glow);
-    outline-offset: 3px;
-}
-
-/* Face colours: negatives blue, 1–4 green, 5–8 yellow, 9–12 red. */
-.card.face[data-val="-2"] {
-    background: linear-gradient(165deg, #6690ff, #3f63d6);
-    color: #f6f9ff;
-}
-
-.card.face[data-val="-1"] {
-    background: linear-gradient(165deg, #b9d0ff, #86a4ef);
-    color: #17305f;
-}
-
-.card.face[data-val="0"] {
-    background: linear-gradient(165deg, #d9f1ff, #a9d4ee);
-    color: #0d3348;
-}
-
-.card.face[data-val="1"],
-.card.face[data-val="2"],
-.card.face[data-val="3"],
-.card.face[data-val="4"] {
-    background: linear-gradient(165deg, #a8f7bd, #45cf74);
-    color: #08301a;
-}
-
-.card.face[data-val="5"],
-.card.face[data-val="6"],
-.card.face[data-val="7"],
-.card.face[data-val="8"] {
-    background: linear-gradient(165deg, #ffeaa4, #f0cc4a);
-    color: #3a2b00;
-}
-
-.card.face[data-val="9"],
-.card.face[data-val="10"],
-.card.face[data-val="11"],
-.card.face[data-val="12"] {
-    background: linear-gradient(165deg, #ffb3a6, #ef6754);
-    color: #4a0f07;
-}
-
-/* Small corner index, as in the reference. */
-.card.face::after {
-    content: attr(data-val);
-    position: absolute;
-    right: calc(var(--card-w) * 0.085);
-    bottom: calc(var(--card-w) * 0.055);
-    font-size: calc(var(--card-w) * 0.19);
-    font-weight: 700;
-    opacity: 0.58;
-    line-height: 1;
+    transition: transform 0.14s ease, box-shadow 0.14s ease, opacity 0.14s ease;
 }
 
 .card.back {
-    color: #eef4ff;
+    color: #f0c060;
+    white-space: nowrap;
     font-size: calc(var(--card-w) * 0.2);
     letter-spacing: 0.02em;
     background:
@@ -973,50 +979,167 @@ body {
     font-weight: 600;
 }
 
-/* Hidden human cards in flip mode. */
-.card.must-flip {
-    box-shadow:
-        0 0 0 2px var(--glow),
-        0 0 20px rgba(123, 255, 180, 0.55),
-        0 8px 18px rgba(0, 0, 0, 0.28);
-    animation: pulseFlip 1.3s ease-in-out infinite;
+.card.wild {
+    background: linear-gradient(135deg, #ffd24d, #e09a00);
+    color: #221109;
 }
 
-@keyframes pulseFlip {
-    0%,
-    100% {
-        box-shadow:
-            0 0 0 2px var(--glow),
-            0 0 14px rgba(123, 255, 180, 0.35),
-            0 8px 18px rgba(0, 0, 0, 0.28);
-    }
-    50% {
-        box-shadow:
-            0 0 0 2px var(--glow),
-            0 0 28px rgba(123, 255, 180, 0.65),
-            0 8px 18px rgba(0, 0, 0, 0.28);
-    }
+.card.c-red {
+    background: linear-gradient(135deg, #ff6b6b, #c0392b);
+    color: #fff;
 }
 
-/* --------------------------------------------------------------------------
-   Centre: discard, deck, drawn card, arrow, status
-   -------------------------------------------------------------------------- */
+.card.c-blue {
+    background: linear-gradient(135deg, #5dade2, #2e86c1);
+    color: #fff;
+}
+
+.card.c-amber {
+    background: linear-gradient(135deg, #f7dc6f, #d4ac0d);
+    color: #221109;
+}
+
+.card.c-purple {
+    background: linear-gradient(135deg, #bb8fce, #7d3c98);
+    color: #fff;
+}
+
+.card.selected {
+    outline: 3px solid var(--glow);
+    outline-offset: 2px;
+    transform: translateY(-6px);
+    z-index: 3;
+}
+
+.card:focus-visible,
+.pile:focus-visible {
+    outline: 2px solid var(--glow);
+    outline-offset: 3px;
+}
+
+/* ---------- Stock, discards, hand ---------------------------------------- */
+
+.stock-area {
+    display: block;
+    width: var(--card-w);
+}
+
+.stock-pile {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 4.05;
+    cursor: pointer;
+}
+
+.stock-pile .card {
+    position: absolute;
+    inset: 0;
+}
+
+.stock-count {
+    position: absolute;
+    z-index: 2;
+    top: 3%;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 1.9em;
+    padding: 0.04em 0.4em;
+    border-radius: 999px;
+    background: rgba(4, 10, 6, 0.72);
+    color: #fff;
+    font-size: clamp(9px, calc(var(--card-w) * 0.19), 15px);
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+}
+
+.discard-area {
+    display: flex;
+    gap: var(--card-gap);
+    justify-content: center;
+}
+
+.discard-pile {
+    position: relative;
+    width: var(--card-w);
+    aspect-ratio: 3 / 4.05;
+    border: 1px dashed rgba(255, 255, 255, 0.25);
+    border-radius: var(--radius);
+    background: rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: box-shadow 0.14s ease, border-color 0.14s ease;
+}
+
+.discard-pile .card {
+    position: absolute;
+    inset: 0;
+}
+
+.discard-pile.discard-target {
+    border-color: var(--glow);
+    box-shadow: 0 0 8px rgba(123, 255, 180, 0.5);
+}
+
+.hand-row {
+    display: flex;
+    gap: var(--card-gap);
+    justify-content: center;
+}
+
+.hand-row .card {
+    cursor: pointer;
+}
+
+.hand-row .card:hover {
+    transform: translateY(-4px);
+}
+
+.hand-row .card:active {
+    transform: translateY(-1px) scale(0.97);
+}
+
+/* Your seat: stock + discards share a row, the hand sits underneath. */
+.seat-self {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-areas:
+        "plate plate"
+        "stock discards"
+        "hand hand";
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    column-gap: var(--card-gap);
+    row-gap: clamp(4px, 0.9dvh, 9px);
+    flex: 0 0 auto;
+}
+
+.seat-self .plate { grid-area: plate; }
+.seat-self .stock-area { grid-area: stock; }
+.seat-self .discard-area { grid-area: discards; }
+.seat-self .hand-row { grid-area: hand; }
+
+/* ---------- Centre: deck + building piles + status ----------------------- */
 
 .center {
-    grid-area: center;
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: clamp(7px, 1.2vh, 13px);
+    gap: clamp(6px, 1.2dvh, 14px);
     width: 100%;
+    min-height: 0;
 }
 
 .center-piles {
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: clamp(12px, 3vw, 26px);
+    gap: calc(var(--card-gap) * 2);
 }
 
 .pile {
@@ -1035,98 +1158,72 @@ body {
 }
 
 .deck .card:nth-child(1) {
-    transform: translate(-5px, 4px) rotate(-4deg);
-    filter: brightness(0.8);
+    transform: translate(-7%, 5%) rotate(-4deg);
+    filter: brightness(0.82);
 }
 
 .deck .card:nth-child(2) {
-    transform: translate(-2px, 2px) rotate(-2deg);
-    filter: brightness(0.9);
+    transform: translate(-3%, 2%) rotate(-2deg);
+    filter: brightness(0.92);
 }
 
 .deck .card:nth-child(3) {
     transform: none;
 }
 
-.discard .card:nth-child(1) {
-    transform: translate(-4px, 3px) rotate(-5deg);
-    filter: brightness(0.82);
-}
-
-.discard .card:nth-child(2) {
-    transform: translate(-1px, 1px) rotate(-1.5deg);
-}
-
-.deck:hover .card:nth-child(3) {
-    transform: translateY(-4px);
-}
-
-/* Actionable pile / card: a soft glow ring. */
-.pile.is-live,
-.hand-area.is-live {
-    cursor: pointer;
-}
-
-.pile.is-live::after {
-    content: "";
-    position: absolute;
-    inset: -5px;
-    border-radius: calc(var(--radius) + 6px);
-    box-shadow:
-        0 0 0 2px rgba(123, 255, 180, 0.6),
-        0 0 24px rgba(123, 255, 180, 0.28);
-    pointer-events: none;
-}
-
-.hand-area.is-live .card {
-    box-shadow:
-        0 0 0 2px rgba(123, 255, 180, 0.6),
-        0 0 24px rgba(123, 255, 180, 0.28),
-        0 8px 18px rgba(0, 0, 0, 0.28);
-}
-
-.draw-zone {
-    position: relative;
+.building-row {
     display: flex;
-    align-items: center;
-    gap: var(--hand-gap);
+    gap: var(--card-gap);
+    justify-content: center;
 }
 
-.draw-arrow {
-    position: absolute;
-    top: calc(var(--card-w) * -0.56);
-    left: calc(100% + (var(--hand-gap) / 2));
-    width: calc(var(--card-w) * 1.75);
-    transform: translateX(-50%);
-    color: rgba(245, 250, 245, 0.8);
-    filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.35));
-    pointer-events: none;
-    overflow: visible;
-}
-
-/* The drawn-card slot is out of flow: the deck + discard stay centred while
-   no card is held, and the drawn card pops out to the right without a jump. */
-.hand-area {
-    position: absolute;
-    top: 0;
-    left: calc(100% + var(--hand-gap));
+.building-slot {
+    position: relative;
     width: var(--card-w);
     aspect-ratio: 3 / 4.05;
-    flex-shrink: 0;
+    border-radius: var(--radius);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: transform 0.14s ease, box-shadow 0.14s ease;
 }
 
-.hand-area .card {
+.building-slot .card {
     position: absolute;
     inset: 0;
-    width: 100%;
-    height: 100%;
-    aspect-ratio: auto;
+}
+
+.building-slot:hover {
+    transform: scale(1.05);
+}
+
+.stock-pile .card,
+.discard-pile .card,
+.building-slot .card,
+.pile .card {
+    font-size: calc(var(--card-w) * 0.44);
+}
+
+.building-slot .card,
+.discard-pile .card {
+    animation: cardPop 0.18s ease;
+}
+
+@keyframes cardPop {
+    from {
+        transform: scale(0.85);
+        opacity: 0.6;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 /* Turn / instruction pill under the centre piles. */
 .status {
     width: max-content;
-    max-width: min(88vw, 430px);
+    max-width: min(88vw, 460px);
     padding: 0.34em 1em;
     border-radius: 999px;
     background: rgba(6, 14, 9, 0.55);
@@ -1140,227 +1237,196 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   Round-end modal
+   Portrait: stacked table for phones and iPads
    -------------------------------------------------------------------------- */
 
-.modal-content {
-    width: min(420px, calc(100vw - 32px));
-    padding: 24px 28px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 18px;
-    background: rgba(10, 20, 14, 0.96);
-    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(16px);
-    text-align: center;
-}
+@media (orientation: portrait) {
+    .board {
+        /* Bottom row (stock + 4 discards) and hand are five cards wide. */
+        --main-w: clamp(40px, min(
+            calc((100vw - 2 * var(--pad-x) - 5 * var(--card-gap)) / 5),
+            calc(11.5dvh - 24px)
+        ), 116px);
+        --card-w: var(--main-w);
+    }
 
-.modal-content h2 {
-    margin-top: 0;
-    color: var(--glow);
-    font-size: 1.4rem;
-}
+    .board[data-players="2"] {
+        --main-w: clamp(40px, min(
+            calc((100vw - 2 * var(--pad-x) - 5 * var(--card-gap)) / 5),
+            calc(18.5dvh - 33px)
+        ), 116px);
+    }
 
-.modal-content p {
-    font-size: 0.96rem;
-    line-height: 1.5;
-    opacity: 0.9;
-}
+    /* Opponents share the row: 2×2 discards under the stock. */
+    .board[data-players="2"] .opponents {
+        --card-w: min(
+            var(--main-w),
+            calc((100vw - 2 * var(--pad-x) - 5 * var(--card-gap)) / 5)
+        );
+    }
 
-.round-scores {
-    min-width: min(280px, 70vw);
-    margin: 16px auto 0;
-    text-align: left;
-}
+    .board[data-players="3"] .opponents {
+        --card-w: min(
+            var(--main-w),
+            calc((100vw - 2 * var(--pad-x) - 2 * var(--card-gap) - var(--seat-gap)) / 4)
+        );
+    }
 
-.round-score-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-}
+    .board[data-players="4"] .opponents {
+        --card-w: min(
+            var(--main-w),
+            calc((100vw - 2 * var(--pad-x) - 3 * var(--card-gap) - 2 * var(--seat-gap)) / 6)
+        );
+    }
 
-.round-score-row span:last-child {
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-}
+    .board[data-players="5"] .opponents {
+        --card-w: min(
+            var(--main-w),
+            calc((100vw - 2 * var(--pad-x) - 4 * var(--card-gap) - 3 * var(--seat-gap)) / 8)
+        );
+    }
 
-.modal-content button {
-    margin-top: 15px;
-    padding: 12px 30px;
-    font-size: 1.02rem;
-    border: none;
-    border-radius: 10px;
-    background: var(--glow);
-    color: #06220f;
-    cursor: pointer;
-    font-weight: 700;
-}
+    .board[data-players="6"] .opponents {
+        --card-w: min(
+            var(--main-w),
+            calc((100vw - 2 * var(--pad-x) - 5 * var(--card-gap) - 4 * var(--seat-gap)) / 10)
+        );
+    }
 
-.modal-content button:hover {
-    filter: brightness(1.06);
+    .opponents .discard-area {
+        display: grid;
+        grid-template-columns: repeat(2, var(--card-w));
+        gap: var(--card-gap);
+        width: calc(var(--card-w) * 2 + var(--card-gap));
+    }
+
+    /* With only one opponent there is room for a single wide row. */
+    .opponents[data-count="1"] .seat {
+        display: grid;
+        grid-template-columns: auto auto;
+        grid-template-areas:
+            "plate plate"
+            "stock discards";
+        align-items: center;
+        justify-items: center;
+        column-gap: var(--card-gap);
+    }
+
+    .opponents[data-count="1"] .plate { grid-area: plate; }
+    .opponents[data-count="1"] .stock-area { grid-area: stock; }
+
+    .opponents[data-count="1"] .discard-area {
+        grid-area: discards;
+        display: flex;
+        width: auto;
+    }
+
+    /* The glow says enough in a single row; side arrows would be noise. */
+    .opponents .seat.is-active .plate::before {
+        display: none;
+    }
 }
 
 /* --------------------------------------------------------------------------
-   Card animations (JS-driven)
-   -------------------------------------------------------------------------- */
-
-.flying-card-wrapper {
-    position: fixed;
-    z-index: 1000;
-    pointer-events: none;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-}
-
-.flying-card-wrapper .card {
-    width: 100%;
-    height: 100%;
-    transition: none;
-}
-
-@keyframes flipOut {
-    0% {
-        transform: scaleX(1);
-    }
-    100% {
-        transform: scaleX(0);
-    }
-}
-
-@keyframes flipIn {
-    0% {
-        transform: scaleX(0);
-    }
-    100% {
-        transform: scaleX(1);
-    }
-}
-
-.flipping-out {
-    animation: flipOut 0.15s forwards;
-}
-
-.flipping-in {
-    animation: flipIn 0.15s forwards;
-}
-
-/* --------------------------------------------------------------------------
-   Landscape: radial table (PC / laptop / iPad landscape)
+   Landscape: radial table (phones, iPads, laptops)
    -------------------------------------------------------------------------- */
 
 @media (orientation: landscape) {
-    :root {
-        --card-w: clamp(30px, min(4.15vw, 6.3vh), 70px);
-        --card-gap: clamp(4px, 0.55vw, 8px);
-        --label-size: clamp(0.72rem, 0.58rem + 0.42vw, 1.02rem);
-    }
-
-    body {
-        overflow: hidden;
-    }
-
-    .felt {
-        inset: 3.4% 4.2% 2.6%;
-        border-radius: 46% 46% 9% 9% / 17% 17% 5% 5%;
-    }
-
-    .logo {
-        width: clamp(96px, 8.6vw, 150px);
-    }
-
-    .logo span {
-        font-size: clamp(24px, 2.4vw, 40px);
-    }
-
-    .menu-btn {
-        width: 44px;
-        height: 40px;
-        border-radius: 11px;
-    }
-
     .board {
-        display: block;
-        min-height: 100dvh;
-        padding: 0;
+        --main-w: clamp(24px, min(
+            calc((100vw - 2 * var(--pad-x) - 5 * var(--card-gap)) / 5),
+            calc((100vw - 2 * var(--pad-x) - 2 * var(--col-gap) - 9 * var(--card-gap)) / 11),
+            calc(11dvh - 20px)
+        ), 116px);
+        --card-w: var(--main-w);
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        grid-template-rows: auto 1fr auto;
+        grid-template-areas:
+            "topleft top topright"
+            "left center right"
+            "bottom bottom bottom";
+        align-items: center;
+        justify-items: center;
+        gap: clamp(4px, 1.2dvh, 14px) var(--col-gap);
+        padding: clamp(4px, 1.2dvh, 12px) var(--pad-x)
+            calc(8px + env(safe-area-inset-bottom));
     }
 
-    .grid-frame {
-        padding: 7px;
+    .board[data-players="2"] {
+        --main-w: clamp(24px, min(
+            calc((100vw - 2 * var(--pad-x) - 5 * var(--card-gap)) / 5),
+            calc(17.5dvh - 30px)
+        ), 116px);
     }
 
-    .seat {
-        position: absolute;
+    .opponents {
+        display: contents;
+        --card-w: var(--main-w);
     }
 
-    .seat[data-seat="top"] {
-        top: clamp(58px, 8.4vh, 90px);
-        left: 50%;
-        transform: translateX(-50%);
-    }
-
-    .seat[data-seat="topleft"] {
-        top: clamp(40px, 6vh, 60px);
-        left: 26%;
-        transform: translate(-50%, 0);
-    }
-
-    .seat[data-seat="topright"] {
-        top: clamp(40px, 6vh, 60px);
-        right: 26%;
-        transform: translate(50%, 0);
-    }
-
-    .seat[data-seat="bottom"] {
-        bottom: clamp(10px, 2.2vh, 26px);
-        left: 50%;
-        transform: translateX(-50%);
-    }
-
+    .seat[data-seat="top"] { grid-area: top; }
+    .seat[data-seat="topleft"] { grid-area: topleft; }
+    .seat[data-seat="topright"] { grid-area: topright; }
     .seat[data-seat="left"] {
-        top: 50%;
-        left: clamp(10px, 3.6vw, 60px);
-        transform: translateY(-50%);
+        grid-area: left;
+        justify-self: start;
     }
-
     .seat[data-seat="right"] {
-        top: 50%;
-        right: clamp(10px, 3.6vw, 60px);
-        transform: translateY(-50%);
+        grid-area: right;
+        justify-self: end;
+    }
+    .seat-self { grid-area: bottom; }
+    .center { grid-area: center; }
+
+    /* Opponent stations sit stock-beside-discards to stay short. */
+    .opponents .seat {
+        display: grid;
+        grid-template-columns: auto auto;
+        grid-template-areas:
+            "plate plate"
+            "stock discards";
+        align-items: center;
+        justify-items: center;
+        column-gap: var(--card-gap);
+        row-gap: clamp(3px, 0.6dvh, 8px);
     }
 
-    .board.is-single-side .seat[data-seat="left"] {
-        grid-column: auto;
-        justify-self: auto;
+    .opponents .seat .plate { grid-area: plate; }
+    .opponents .seat .stock-area { grid-area: stock; }
+
+    .opponents .seat .discard-area {
+        grid-area: discards;
+        display: grid;
+        grid-template-columns: repeat(2, var(--card-w));
+        gap: var(--card-gap);
+        width: calc(var(--card-w) * 2 + var(--card-gap));
     }
 
-    .center {
-        position: absolute;
-        top: 54%;
-        left: 50%;
-        width: max-content;
-        max-width: min(94vw, 600px);
-        transform: translate(-50%, -50%);
-    }
-
-    .center-piles {
-        gap: clamp(16px, 2.4vw, 36px);
-    }
-
-    .status {
-        max-width: min(480px, 42vw);
+    .opponents[data-count="1"] .seat .discard-area {
+        display: flex;
+        width: auto;
     }
 }
 
-/* Compact landscape: phones held sideways (short viewport). */
-@media (orientation: landscape) and (max-height: 520px) {
-    :root {
-        --card-w: clamp(22px, 6.6vh, 42px);
-        --card-gap: 3px;
-        --label-size: 0.66rem;
+/* Short landscape phones: shrink chrome and cards so everything fits. */
+@media (orientation: landscape) and (max-height: 560px) {
+    .board {
+        --main-w: clamp(20px, min(
+            calc((100vw - 2 * var(--pad-x) - 2 * var(--col-gap) - 9 * var(--card-gap)) / 11),
+            calc(7.3dvh)
+        ), 60px);
+        --card-w: var(--main-w);
+        padding-top: 4px;
+        gap: 4px var(--col-gap);
+    }
+
+    .board[data-players="2"] {
+        --main-w: clamp(22px, calc(18.2dvh - 26px), 84px);
     }
 
     .topbar {
-        padding-top: calc(6px + env(safe-area-inset-top));
+        padding-top: calc(5px + env(safe-area-inset-top));
     }
 
     .logo {
@@ -1368,54 +1434,37 @@ body {
     }
 
     .logo span {
-        font-size: 22px;
+        font-size: 20px;
     }
 
-    .menu-btn {
-        width: 38px;
+    .logo svg {
+        height: 8px;
+    }
+
+    .icon-btn {
+        width: 36px;
         height: 34px;
+        border-radius: 10px;
     }
 
-    .seat[data-seat="top"] {
-        top: calc(42px + env(safe-area-inset-top));
+    .opponents .plate {
+        font-size: 8px;
+        padding: 0.1em 0.4em;
     }
 
-    .seat[data-seat="bottom"] {
-        bottom: calc(6px + env(safe-area-inset-bottom));
-    }
-
-    .grid-frame {
-        padding: 4px;
-    }
-
-    .center {
-        top: 52%;
-    }
-
-    .center-piles {
-        gap: 14px;
-    }
-
-    /* No room for the arrow, the turn pill or active arrows: the glows and
-       the plates still show whose turn it is. */
-    .draw-arrow,
-    .status,
     .seat.is-active .plate::before {
         display: none;
     }
-}
 
-/* Tablets in portrait: a little more air. */
-@media (orientation: portrait) and (min-width: 600px) {
-    .board {
-        padding-left: 4vw;
-        padding-right: 4vw;
-    }
-
-    .plate {
-        font-size: clamp(0.8rem, 2vw, 1rem);
+    .status {
+        font-size: 0.62rem;
+        padding: 0.28em 0.8em;
     }
 }
+
+/* --------------------------------------------------------------------------
+   Small screens: setup panel and modals
+   -------------------------------------------------------------------------- */
 
 @media (max-width: 620px) {
     .room-controls {
@@ -1435,12 +1484,11 @@ body {
 
     .room-panel {
         width: calc(100% - 20px);
-        margin-top: calc(64px + env(safe-area-inset-top));
         padding: 20px 16px;
         border-radius: 16px;
     }
 
-    #app.room-active #room-panel:not([hidden]) {
+    #app.room-active #setup-panel:not([hidden]) {
         top: calc(56px + env(safe-area-inset-top));
         right: 10px;
         width: calc(100vw - 20px);
@@ -1471,32 +1519,3 @@ body {
         transition-duration: 0.01ms !important;
     }
 }
-
-/* Skip-Bo additions */
-.stock-area { display:flex; flex-direction:column; align-items:center; gap:4px; }
-.stock-pile { position:relative; width:var(--card-w); height:calc(var(--card-w)*1.4); cursor:pointer; }
-.stock-pile .card { position:absolute; inset:0; }
-.stock-count { font-size:0.7rem; opacity:0.8; text-align:center; }
-.discard-area { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
-.discard-pile { width:var(--card-w); height:calc(var(--card-w)*1.4); position:relative; cursor:pointer; border:1px dashed rgba(255,255,255,0.25); border-radius:var(--radius); background:rgba(0,0,0,0.15); }
-.discard-pile .card { position:absolute; inset:0; }
-.hand-row { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:8px; }
-.center-piles { display:flex; flex-direction:column; align-items:center; gap:12px; }
-.building-row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
-.building-slot { width:var(--card-w); height:calc(var(--card-w)*1.4); border-radius:var(--radius); border:2px dashed rgba(255,255,255,0.3); position:relative; cursor:pointer; background:rgba(0,0,0,0.2); }
-.building-slot .card { position:absolute; inset:0; }
-.card.back { background:linear-gradient(135deg,#1b3a6b,#0d1f40); color:#f0c060; font-size:0.7rem; letter-spacing:0.05em; }
-.card.wild { background:linear-gradient(135deg,#ffd24d,#e09a00); color:#221109; }
-.stock-pile .card, .discard-pile .card, .building-slot .card, .deck .card { width:100%; height:100%; font-size:calc(var(--card-w)*0.42); }
-.card.selected { outline:3px solid #7bffb4; transform:translateY(-6px); }
-.card.c-red { background:linear-gradient(135deg,#ff6b6b,#c0392b); color:#fff; }
-.card.c-blue { background:linear-gradient(135deg,#5dade2,#2e86c1); color:#fff; }
-.card.c-amber { background:linear-gradient(135deg,#f7dc6f,#d4ac0d); color:#221109; }
-.card.c-purple { background:linear-gradient(135deg,#bb8fce,#7d3c98); color:#fff; }
-.card { transition: transform 0.14s ease, box-shadow 0.14s ease, opacity 0.14s ease; }
-.building-slot .card, .discard-pile .card { animation: cardPop 0.18s ease; }
-@keyframes cardPop { from { transform: scale(0.85); opacity: 0.6; } to { transform: scale(1); opacity: 1; } }
-.building-slot { transition: transform 0.14s ease, box-shadow 0.14s ease; }
-.building-slot:hover { transform: scale(1.05); }
-.discard-pile { transition: box-shadow 0.14s ease, border-color 0.14s ease; }
-.discard-pile.discard-target { border-color:#7bffb4; box-shadow:0 0 8px rgba(123,255,180,0.5); }
