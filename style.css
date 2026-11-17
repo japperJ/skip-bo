@@ -603,6 +603,49 @@ body {
     backdrop-filter: blur(3px);
 }
 
+/* Round-end / win dialog */
+.modal-content {
+    width: min(420px, calc(100vw - 32px));
+    max-height: calc(100dvh - 32px);
+    padding: 24px 28px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    background: rgba(10, 20, 14, 0.96);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(16px);
+    text-align: center;
+    overflow-y: auto;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: var(--glow);
+    font-size: 1.4rem;
+}
+
+.modal-content p {
+    margin: 0.5em 0;
+    font-size: 0.96rem;
+    line-height: 1.5;
+    opacity: 0.9;
+}
+
+.modal-content button {
+    margin-top: 15px;
+    padding: 12px 30px;
+    font-size: 1.02rem;
+    border: none;
+    border-radius: 10px;
+    background: var(--glow);
+    color: #06220f;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.modal-content button:hover {
+    filter: brightness(1.06);
+}
+
 #learn-panel {
     z-index: 110;
     overflow-y: auto;
@@ -754,6 +797,7 @@ body {
     --pad-x: clamp(10px, 2.6vw, 26px);
     --card-gap: clamp(3px, 0.9vw, 8px);
     --seat-gap: clamp(5px, 1.4vw, 16px);
+    --col-gap: clamp(8px, 2vw, 26px);
     --label-size: clamp(0.66rem, 0.52rem + 0.32vw, 0.95rem);
     --card-w: 64px;
     --radius: calc(var(--card-w) * 0.09);
@@ -1291,6 +1335,7 @@ body {
     .board {
         --main-w: clamp(24px, min(
             calc((100vw - 2 * var(--pad-x) - 5 * var(--card-gap)) / 5),
+            calc((100vw - 2 * var(--pad-x) - 2 * var(--col-gap) - 9 * var(--card-gap)) / 11),
             calc(11dvh - 20px)
         ), 116px);
         --card-w: var(--main-w);
@@ -1303,7 +1348,7 @@ body {
             "bottom bottom bottom";
         align-items: center;
         justify-items: center;
-        gap: clamp(4px, 1.2dvh, 14px) clamp(8px, 2vw, 26px);
+        gap: clamp(4px, 1.2dvh, 14px) var(--col-gap);
         padding: clamp(4px, 1.2dvh, 12px) var(--pad-x)
             calc(8px + env(safe-area-inset-bottom));
     }
@@ -1367,10 +1412,13 @@ body {
 /* Short landscape phones: shrink chrome and cards so everything fits. */
 @media (orientation: landscape) and (max-height: 560px) {
     .board {
-        --main-w: clamp(20px, calc(7.3dvh), 60px);
+        --main-w: clamp(20px, min(
+            calc((100vw - 2 * var(--pad-x) - 2 * var(--col-gap) - 9 * var(--card-gap)) / 11),
+            calc(7.3dvh)
+        ), 60px);
         --card-w: var(--main-w);
         padding-top: 4px;
-        gap: 4px clamp(8px, 2vw, 26px);
+        gap: 4px var(--col-gap);
     }
 
     .board[data-players="2"] {
