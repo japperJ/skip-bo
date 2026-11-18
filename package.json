@@ -1,0 +1,15 @@
+{
+  "name": "skip-bo",
+  "version": "1.0.0",
+  "description": "Skip-Bo Web Game",
+  "scripts": {
+    "build": "echo 'Static site - no build needed'"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^1.1.1"
+  },
+  "devDependencies": {},
+  "keywords": ["skip-bo", "card-game"],
+  "author": "",
+  "license": "ISC"
+}
